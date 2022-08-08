@@ -4,7 +4,7 @@ Based on https://hub.docker.com/r/psitrax/powerdns - https://github.com/psi-4war
 
 # PowerDNS Docker Container
 
-[![Docker Stars](https://img.shields.io/docker/stars/cybiox9/powerdns.svg)](https://hub.docker.com/r/cyviox9/powerdns/)
+[![Docker Stars](https://img.shields.io/docker/stars/cybiox9/powerdns.svg)](https://hub.docker.com/r/cybiox9/powerdns/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/cybiox9/powerdns.svg)](https://hub.docker.com/r/cybiox9/powerdns/)
 
 
