@@ -53,6 +53,38 @@ docker_setup_env() {
 
 }
 
+# version compare
+vercomp () {
+    if [[ $1 == $2 ]]
+    then
+        return 0
+    fi
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            return 1
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            return 2
+        fi
+    done
+    return 0
+}
+
 # sqlite db --------------------------------------------------------------------
 init_sqlite3() {
   if [[ ! -f "$PDNS_GSQLITE3_DATABASE" ]]; then
@@ -73,12 +105,18 @@ init_sqlite3() {
     # do the database upgrade
     while true; do
       current="$(echo "SELECT version FROM $SCHEMA_VERSION_TABLE ORDER BY id DESC LIMIT 1;" | sqlite3 ${PDNS_GSQLITE3_DATABASE})"
-      if [ "$current" != "$SQLITE_VERSION" ]; then
-        filename=/etc/pdns/sql/${current}_to_*_schema.sqlite3.sql
-        echo "Applying Update $(basename $filename)"
-        sqlite3 ${PDNS_GSQLITE3_DATABASE} < $filename
-        current=$(basename $filename | sed -n 's/^[0-9.]\+_to_\([0-9.]\+\)_.*$/\1/p')
-        echo "INSERT INTO $SCHEMA_VERSION_TABLE (version) VALUES ('$current');" | sqlite3 ${PDNS_GSQLITE3_DATABASE}
+      vercomp $SQLITE_VERSION $current
+      if [[ $? -eq 1 ]]; then
+        for SQLFILE in $(find /etc/pdns/sql/ -type f -regex '.*/[0-9.]+_to_[0-9.]+_schema.sqlite3.sql$' | sort) ; do
+          # echo Source $SQLFILE
+          file_ver=$(basename $SQLFILE | sed -n 's/^[0-9.]\+_to_\([0-9.]\+\)_.*$/\1/p')
+          vercomp $file_ver $current
+          if [[ $? -eq 1 ]]; then
+            echo "Applying Update $(basename $SQLFILE)"
+            sqlite3 ${PDNS_GSQLITE3_DATABASE} < $SQLFILE
+          fi
+        done
+        echo "INSERT INTO $SCHEMA_VERSION_TABLE (version) VALUES ('$SQLITE_VERSION');" | sqlite3 ${PDNS_GSQLITE3_DATABASE}
       else
         break
       fi
@@ -150,12 +188,18 @@ init_mysql() {
     # do the database upgrade
     while true; do
       current="$(echo "SELECT version FROM $SCHEMA_VERSION_TABLE ORDER BY id DESC LIMIT 1;" | $MYSQLCMD)"
-      if [ "$current" != "$MYSQL_VERSION" ]; then
-        filename=/etc/pdns/sql/${current}_to_*_schema.mysql.sql
-        echo "Applying Update $(basename $filename)"
-        $MYSQLCMD < $filename
-        current=$(basename $filename | sed -n 's/^[0-9.]\+_to_\([0-9.]\+\)_.*$/\1/p')
-        echo "INSERT INTO $SCHEMA_VERSION_TABLE (version) VALUES ('$current');" | $MYSQLCMD
+      vercomp $MYSQL_VERSION $current
+      if [[ $? -eq 1 ]]; then
+        for SQLFILE in $(find /etc/pdns/sql/ -type f -regex '.*/[0-9.]+_to_[0-9.]+_schema.mysql.sql$' | sort) ; do
+          # echo Source $SQLFILE
+          file_ver=$(basename $SQLFILE | sed -n 's/^[0-9.]\+_to_\([0-9.]\+\)_.*$/\1/p')
+          vercomp $file_ver $current
+          if [[ $? -eq 1 ]]; then
+            echo "Applying Update $(basename $SQLFILE)"
+            $MYSQLCMD < $SQLFILE
+          fi
+        done
+        echo "INSERT INTO $SCHEMA_VERSION_TABLE (version) VALUES ('$MYSQL_VERSION');" | $MYSQLCMD
       else
         break
       fi
@@ -222,16 +266,22 @@ init_pgsql () {
       # do the database upgrade
       while true; do
         current="$(echo "SELECT version FROM $SCHEMA_VERSION_TABLE ORDER BY id DESC LIMIT 1;" | $PGSQLCMD -qAt)"
-        if [ "$current" != "$PGSQL_VERSION" ]; then
-          filename=/etc/pdns/sql/${current}_to_*_schema.pgsql.sql
-          echo "Applying Update $(basename $filename)"
-          $PGSQLCMD < $filename
-          current=$(basename $filename | sed -n 's/^[0-9.]\+_to_\([0-9.]\+\)_.*$/\1/p')
-          echo "INSERT INTO $SCHEMA_VERSION_TABLE (version) VALUES ('$current');" | $PGSQLCMD
+        vercomp $PGSQL_VERSION $current
+        if [[ $? -eq 1 ]]; then
+          for SQLFILE in $(find /etc/pdns/sql/ -type f -regex '.*/[0-9.]+_to_[0-9.]+_schema.pgsql.sql$' | sort) ; do
+            # echo Source $SQLFILE
+            file_ver=$(basename $SQLFILE | sed -n 's/^[0-9.]\+_to_\([0-9.]\+\)_.*$/\1/p')
+            vercomp $file_ver $current
+            if [[ $? -eq 1 ]]; then
+              echo "Applying Update $(basename $SQLFILE)"
+              $PGSQL < $SQLFILE
+            fi
+          done
+          echo "INSERT INTO $SCHEMA_VERSION_TABLE (version) VALUES ('$PGSQL_VERSION');" | $PGSQL
         else
           break
         fi
-      done
+      done  
     fi
   fi
 
