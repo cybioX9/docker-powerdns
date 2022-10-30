@@ -6,6 +6,10 @@ Based on https://hub.docker.com/r/psitrax/powerdns - https://github.com/psi-4war
 
 [![Docker Stars](https://img.shields.io/docker/stars/cybiox9/powerdns.svg)](https://hub.docker.com/r/cybiox9/powerdns/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/cybiox9/powerdns.svg)](https://hub.docker.com/r/cybiox9/powerdns/)
+[![Docker Version](https://img.shields.io/docker/v/cybiox9/powerdns.svg?sort=semver)](https://hub.docker.com/r/cybiox9/powerdns/)
+[![Docker Size](https://img.shields.io/docker/image-size/cybiox9/powerdns.svg?sort=semver)](https://hub.docker.com/r/cybiox9/powerdns/)
+
+GitHub: https://github.com/cybioX9/docker-powerdns/
 
 
 * Small Alpine based Image
