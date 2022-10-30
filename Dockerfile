@@ -35,15 +35,15 @@ ENV AUTOCONF=mysql \
     MYSQL_PASS="root" \
     MYSQL_DB="pdns" \
     MYSQL_DNSSEC="no" \
-    MYSQL_VERSION="4.6.0" \
+    MYSQL_VERSION="4.7.0" \
     PGSQL_HOST="postgres" \
     PGSQL_PORT="5432" \
     PGSQL_USER="postgres" \
     PGSQL_PASS="postgres" \
     PGSQL_DB="pdns" \
-    PGSQL_VERSION="4.6.0" \
+    PGSQL_VERSION="4.7.0" \
     SQLITE_DB="pdns.sqlite3" \
-    SQLITE_VERSION="4.6.0" \
+    SQLITE_VERSION="4.7.0" \
     SCHEMA_VERSION_TABLE="_schema_version"
 
 EXPOSE 53/tcp 53/udp
